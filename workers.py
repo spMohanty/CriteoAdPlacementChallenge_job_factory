@@ -38,6 +38,14 @@ def grade_submission(data, _context):
         # as the default JSON serization did not work with numpy floats
         scores[_key] = float(scores[_key])
 
+    _update_job_event(_context, job_info_template(_context, "Scores Computed Successfully !!"))
+    _update_job_event(_context, job_info_template(_context, "IPS : {}".format(scores["ips"])))
+    _update_job_event(_context, job_info_template(_context, "IPS_std: {}".format(scores["ips_std"])))
+    _update_job_event(_context, job_info_template(_context, "ImpWt : {}".format(scores["impwt"])))
+    _update_job_event(_context, job_info_template(_context, "ImpWt_std: {}".format(scores["impwt_std"])))
+    _update_job_event(_context, job_info_template(_context, "SNIPS : {}".format(scores["snips"])))
+    _update_job_event(_context, job_info_template(_context, "SNIPS_std: {}".format(scores["snips_std"])))
+    _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
     #Upload to CrowdAI Leaderboard
     headers = {'Authorization' : 'Token token='+config.CROWDAI_TOKEN, "Content-Type":"application/vnd.api+json"}
     _payload = {}
@@ -57,9 +65,11 @@ def grade_submission(data, _context):
         data = json.loads(r.text)
         submission_id = str(data['submission_id'])
         _context['redis_conn'].set(config.challenge_id+"::submissions::"+submission_id, json.dumps(_payload))
+        _update_job_event(_context, job_info_template(_context, "Scores Submited Successfully !!! "))
+        del scores["file_key"]
+        _update_job_event(_context, job_complete_template(_context, scores))
     else:
         raise Exception(r.text)
-    _update_job_event(_context, job_complete_template(_context, scores))
 
 def _update_job_event(_context, data):
     """
