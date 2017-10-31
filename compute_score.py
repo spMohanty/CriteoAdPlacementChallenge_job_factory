@@ -5,12 +5,13 @@ from criteo_starter_kit.criteo_dataset import CriteoDataset
 from criteo_starter_kit.criteo_prediction import CriteoPrediction
 
 import numpy as np
+import utils
 
 DEBUG = False
 GOLD_LABEL_PATH = "data/cntk_train_small.txt"
 PREDICTIONS_PATH = "data/predictions.txt"
 
-def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH):
+def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
     gold_data = CriteoDataset(GOLD_LABEL_PATH)
     predictions = CriteoPrediction(PREDICTIONS_PATH)
 
@@ -19,21 +20,10 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH):
     neg_label = 0.001
 
     max_instances = predictions.max_instances
+    # TODO: Validation: Add a forced assertion on the max_instances
 
     num_positive_instances = 0
     num_negative_instances = 0
-
-    #Random
-    rand_numerator = np.zeros(max_instances, dtype = np.float)
-    rand_denominator = np.zeros(max_instances, dtype = np.float)
-
-    #Logger
-    log_numerator = np.zeros(max_instances, dtype = np.float)
-    log_denominator = np.zeros(max_instances, dtype = np.float)
-
-    #NewPolicy
-    prediction_numerator = np.zeros(max_instances, dtype = np.float)
-    prediction_denominator = np.zeros(max_instances, dtype = np.float)
 
     #NewPolicy - Stochastic
     prediction_stochastic_numerator = np.zeros(max_instances, dtype = np.float)
@@ -60,11 +50,6 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH):
             # TODO: raise Error
             pass
 
-        rand_weight = 1.0 / (num_canidadates * propensity)
-        rand_numerator[_idx] = rectified_label * rand_weight
-        rand_denominator[_idx] = rand_weight
-
-
         if label == pos_label:
             log_weight = 1.0
         elif label == neg_label:
@@ -72,9 +57,6 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH):
         else:
             #TODO: raise Error
             pass
-
-        log_numerator[_idx] = rectified_label * log_weight
-        log_denominator[_idx] = log_weight
 
         #For deterministic policy
         best_score = np.min(scores)
@@ -92,18 +74,14 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH):
 
         score_logged_action = prob_scores[0]
 
-        if 0 in best_classes:
-            prediction_weight = 1.0 / (len(best_classes) * propensity)
-            prediction_numerator[_idx] = rectified_label * prediction_weight
-            prediction_denominator[_idx] = prediction_weight
-
         prediction_stochastic_weight = 1.0 * score_logged_action / (score_normalizer * propensity)
         prediction_stochastic_numerator[_idx] = rectified_label * prediction_stochastic_weight
         prediction_stochastic_denominator[_idx] = prediction_stochastic_weight
 
         impression_counter += 1 #Adding this as _idx is not available out of this scope
-        if _idx % 100 == 0 and DEBUG:
-            print('.', end='')
+        if _idx % 100 == 0:
+            utils.update_progress(_context, _idx*100.0/max_instances)
+            if DEBUG: print('.', end='')
 
     gold_data.close()
     predictions.close()

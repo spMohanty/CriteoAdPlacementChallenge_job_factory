@@ -5,7 +5,10 @@ class Config:
     challenge_id = "NIPS2017_CriteoAdPlacementChallenge"
     redis_namespace = challenge_id
     CROWDAI_TOKEN= "YOUR-CROWDAI-TOKEN-GRADER-TOKEN-HERE"
+    CROWDAI_GRADER_URL = "YOUR-CROWDAI-GRADER-URL"
+    
     AWS_S3_BUCKET = "s3-bucket-name"
     S3_UPLOAD_PATH = "S3 upload path"
     AWS_ACCESS_KEY_ID = "aws_access_key_id"
     AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
+    TEMP_STORAGE_DIRECTORY_PATH = "temp/"

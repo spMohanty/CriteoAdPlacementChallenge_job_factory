@@ -17,57 +17,49 @@ import requests
 import helpers
 import uuid
 
+from compute_score import grade_predictions
+
 POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=config.redis_db)
 
 
 def _obtain_presigned_url(filename, context):
     return helpers.obtain_presigned_url(filename)
 
-def _evaluate(predicted_heights, true_heights, context):
-    """
-        takes a list of predicted heights and true heights and computes the score
-    """
-    _result_object = {
-        "score" : 0,
-        "score_secondary" : 10,
-    }
-    return _result_object
-
-def _submit(predicted_heights, true_heights, context):
-    """
-        takes a list of predicted heights and actual heights and computes the score
-
-        and prepares the plots for submission to the leaderboard
-    """
-    _result_object = _evaluate(predicted_heights[:50], true_heights[:50], context)
-    #_result_object["comment"] = ""
-    #_result_object["media_large"] = "https://upload.wikimedia.org/wikipedia/commons/4/44/Drift_Diffusion_Model_Accumulation_to_Threshold_Example_Graphs.png"
-    #_result_object["media_thumbnail"] = "https://upload.wikimedia.org/wikipedia/commons/4/44/Drift_Diffusion_Model_Accumulation_to_Threshold_Example_Graphs.png"
-    #_result_object["media_content_type"] = "image/jpeg"
+def grade_submission(data, _context):
+    file_key = data["file_key"]
+    # Start the download of the file locally to the temp folder
+    _update_job_event(_context, job_info_template(_context,"Beginning grading of the submission"))
+    local_file_path = helpers.download_file_from_s3(file_key)
 
 
-    # Upload result to crowdai
+    scores = grade_predictions(local_file_path, config.GOLD_LABEL_PATH, _context)
+    for _key in scores.keys():
+        # converting to simple `floats` (even if we loose a bit of precision)
+        # as the default JSON serization did not work with numpy floats
+        scores[_key] = float(scores[_key])
+
+    #Upload to CrowdAI Leaderboard
     headers = {'Authorization' : 'Token token='+config.CROWDAI_TOKEN, "Content-Type":"application/vnd.api+json"}
-
-    _payload = _result_object
+    _payload = {}
+    _payload["score"] = scores["ips"]
+    _payload["score_secondary"] = scores["ips_std"]
+    _payload["metadata"] = scores
+    _payload["metadata"]["file_key"] = file_key
     _payload['challenge_client_name'] = config.challenge_id
-    _payload['api_key'] = context['api_key']
+    _payload['api_key'] = _context['api_key']
     _payload['grading_status'] = 'graded'
     _payload['comment'] = "" #TODO: Allow participants to add comments to submissions
 
     print "Making POST request...."
     r = requests.post(config.CROWDAI_GRADER_URL, params=_payload, headers=headers, verify=False)
     print "Status Code : ",r.status_code
-
     if r.status_code == 202:
         data = json.loads(r.text)
         submission_id = str(data['submission_id'])
-        _payload['data'] = predicted_heights
-        context['redis_conn'].set(config.challenge_id+"::submissions::"+submission_id, json.dumps(_payload))
-        pass #TODO: Add success message
+        _context['redis_conn'].set(config.challenge_id+"::submissions::"+submission_id, json.dumps(_payload))
     else:
-        raise Exception(str(r.text))
-    return _result_object
+        raise Exception(r.text)
+    _update_job_event(_context, job_complete_template(_context, scores))
 
 def _update_job_event(_context, data):
     """
@@ -99,13 +91,8 @@ def job_execution_wrapper(data):
             filename = "{}.gz".format(uuid.uuid4())
             file_key, presigned_url = _obtain_presigned_url(filename, _context)
             _update_job_event(_context, job_complete_template(_context, {"presigned_url":presigned_url, "file_key":file_key}))
-        elif data["function_name"] == "submit":
-            # Run the job
-            true_heights = np.load("test_heights.npy")
-            result = _submit(data["data"], true_heights, _context)
-            # Register Job Complete event
-            _update_job_event(_context, job_info_template(_context, "Scores Submitted Successfully ! Coefficient of Determination(R^2) : %s ; MSE : %s" % (str(result['score']), str(result['score_secondary'])) ))
-            _update_job_event(_context, job_complete_template(_context, result))
+        elif data["function_name"] == "grade_submission":
+            grade_submission(data["data"], _context)
         else:
             _error_object = job_error_template(job.id, "Function not implemented error")
             _update_job_event(_context, job_error_template(job.id, result))
