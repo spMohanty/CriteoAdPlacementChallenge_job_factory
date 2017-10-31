@@ -1,6 +1,11 @@
 class Config:
     redis_host = "localhost"
     redis_port = 6379
+    redis_db = 2
     challenge_id = "NIPS2017_CriteoAdPlacementChallenge"
     redis_namespace = challenge_id
-    CROWDAI_TOKEN=YOUR-CROWDAI-TOKEN-GRADER-TOKEN-HERE
+    CROWDAI_TOKEN= "YOUR-CROWDAI-TOKEN-GRADER-TOKEN-HERE"
+    AWS_S3_BUCKET = "s3-bucket-name"
+    S3_UPLOAD_PATH = "S3 upload path"
+    AWS_ACCESS_KEY_ID = "aws_access_key_id"
+    AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"

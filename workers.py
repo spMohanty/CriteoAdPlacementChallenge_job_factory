@@ -14,39 +14,22 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 
 import requests
+import helpers
+import uuid
 
-POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=0)
+POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=config.redis_db)
+
+
+def _obtain_presigned_url(filename, context):
+    return helpers.obtain_presigned_url(filename)
 
 def _evaluate(predicted_heights, true_heights, context):
     """
         takes a list of predicted heights and true heights and computes the score
     """
-    score = 0
-    secondary_score = 0
-
-    """
-    for k in range(100):
-        time.sleep(random.randint(0,100)/1000.0)
-        percent_complete = k*1.0/100 * 100
-        update_progress(context, percent_complete, "")
-        # print "Context Response Channel ::: ", context['response_channel']
-        # if k%20==0:
-        #     # print "Update : ", percent_complete
-        score += random.randint(1,100)*1.0/0.7 / 100
-        secondary_score += random.randint(1,100)*1.0/0.7 / 100
-    """
-   
-    predicted_heights = np.array(predicted_heights)
-    true_heights = np.array(true_heights)
-    if predicted_heights.shape != true_heights.shape:
-        raise Exception("Wrong number of predictions provided. Expected a variable of shape %s, but received a variable of shape %s instead" % ( str(true_heights.shape), str(predicted_heights.shape) ))
-
-    score = r2_score(true_heights, predicted_heights)
-    secondary_score = mean_squared_error(true_heights, predicted_heights)
-
     _result_object = {
-        "score" : score,
-        "score_secondary" : secondary_score,
+        "score" : 0,
+        "score_secondary" : 10,
     }
     return _result_object
 
@@ -75,12 +58,12 @@ def _submit(predicted_heights, true_heights, context):
     print "Making POST request...."
     r = requests.post(config.CROWDAI_GRADER_URL, params=_payload, headers=headers, verify=False)
     print "Status Code : ",r.status_code
-    
+
     if r.status_code == 202:
         data = json.loads(r.text)
         submission_id = str(data['submission_id'])
         _payload['data'] = predicted_heights
-        context['redis_conn'].set(config.challenge_id+"::submissions::"+submission_id, json.dumps(_payload)) 
+        context['redis_conn'].set(config.challenge_id+"::submissions::"+submission_id, json.dumps(_payload))
         pass #TODO: Add success message
     else:
         raise Exception(str(r.text))
@@ -112,7 +95,11 @@ def job_execution_wrapper(data):
     _update_job_event(_context, job_running_template(_context['data_sequence_no'], job.id))
     result = {}
     try:
-        if data["function_name"] == "submit":
+        if data["function_name"] == "obtain_presigned_url":
+            filename = "{}.gz".format(uuid.uuid4())
+            file_key, presigned_url = _obtain_presigned_url(filename, _context)
+            _update_job_event(_context, job_complete_template(_context, {"presigned_url":presigned_url, "file_key":file_key}))
+        elif data["function_name"] == "submit":
             # Run the job
             true_heights = np.load("test_heights.npy")
             result = _submit(data["data"], true_heights, _context)
