@@ -49,7 +49,7 @@ def grade_submission(data, _context):
     _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
 
     # Clean up
-    os.rmtree(local_file_path)
+    os.remove(local_file_path)
 
     #Upload to CrowdAI Leaderboard
     headers = {'Authorization' : 'Token token='+config.CROWDAI_TOKEN, "Content-Type":"application/vnd.api+json"}
