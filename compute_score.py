@@ -16,8 +16,8 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
     predictions = CriteoPrediction(PREDICTIONS_PATH)
 
     # Instantiate variables
-    pos_label = 0.999
-    neg_label = 0.001
+    pos_label = 0.001
+    neg_label = 0.999
 
     max_instances = predictions.max_instances
     # TODO: Validation: Add a forced assertion on the max_instances
@@ -33,6 +33,9 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
     for _idx, _impression in enumerate(gold_data):
         # TODO: Add Validation
         prediction = next(predictions)
+        if _impression['id'] != prediction['id']:
+            raise Exception("`prediction_id` doesnot match the corresponding `impression_id`. Please ensure that the lines in the prediction file are in the same order as in the test set.")
+
         scores = prediction["scores"]
 
         label = _impression["cost"]
@@ -47,27 +50,24 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
         elif label == neg_label:
             num_negative_instances += 1
         else:
-            # TODO: raise Error
-            pass
+            raise Exception("Unknown cost label for impression_id {}".format(_impression['id']))
 
         if label == pos_label:
             log_weight = 1.0
         elif label == neg_label:
             log_weight = 10.0
         else:
-            #TODO: raise Error
-            pass
+            raise Exception("Unknown cost label for impression_id {}".format(_impression['id']))
 
         #For deterministic policy
-        best_score = np.min(scores)
+        best_score = np.max(scores)
         best_classes = np.argwhere(scores == best_score).flatten()
 
         #For stochastic policy
         score_logged_action = None
         score_normalizer = 0.0
-        score_offset = -best_score
 
-        scores_with_offset = -scores - score_offset
+        scores_with_offset = scores - best_score
         prob_scores = np.exp(scores_with_offset)
 
         score_normalizer = np.sum(prob_scores)
@@ -94,7 +94,6 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
         print("Num[Pos/Neg]Test Instances:", num_positive_instances, num_negative_instances)
         print("MaxID; curId", max_instances, impression_counter)
         print("Approach & IPS(*10^4) & StdErr(IPS)*10^4 & SN-IPS(*10^4) & StdErr(SN-IPS)*10^4 & AvgImpWt & StdErr(AvgImpWt) \\")
-
 
     def compute_result(approach, numerator, denominator):
         IPS = numerator.sum(dtype = np.longdouble) / modified_denominator
