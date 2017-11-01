@@ -7,13 +7,9 @@ from criteo_starter_kit.criteo_prediction import CriteoPrediction
 import numpy as np
 import utils
 
-DEBUG = False
-GOLD_LABEL_PATH = "data/cntk_train_small.txt"
-PREDICTIONS_PATH = "data/predictions.txt"
-
-def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context=False, salt_swap=False):
-    gold_data = CriteoDataset(GOLD_LABEL_PATH)
-    predictions = CriteoPrediction(PREDICTIONS_PATH)
+def grade_predictions(predictions_path, gold_labels_path, _context=False, salt_swap=False, _debug = False):
+    gold_data = CriteoDataset(gold_labels_path)
+    predictions = CriteoPrediction(predictions_path)
 
     # Instantiate variables
     pos_label = 0.001
@@ -86,7 +82,7 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context=False, salt_sw
         if _idx % 100 == 0:
             if _context:
                 utils.update_progress(_context, _idx*100.0/max_instances)
-            if DEBUG: print('.', end='')
+            if _debug: print('.', end='')
 
     gold_data.close()
     predictions.close()
@@ -94,7 +90,7 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context=False, salt_sw
     modified_denominator = num_positive_instances + 10*num_negative_instances
     scaleFactor = np.sqrt(max_instances) / modified_denominator
 
-    if DEBUG:
+    if _debug:
         print('')
         print("Num[Pos/Neg]Test Instances:", num_positive_instances, num_negative_instances)
         print("MaxID; curId", max_instances, impression_counter)
@@ -131,5 +127,6 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context=False, salt_sw
     return compute_result('NewPolicy-Stochastic', prediction_stochastic_numerator, prediction_stochastic_denominator)
 
 if __name__ == "__main__":
-    DEBUG = True
-    print(grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH))
+    gold_labels_path = "data/cntk_train_small.txt"
+    predictions_path = "data/predictions.txt"
+    print(grade_predictions(predictions_path, gold_labels_path, _debug=True))
