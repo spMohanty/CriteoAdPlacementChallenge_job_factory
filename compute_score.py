@@ -11,7 +11,7 @@ DEBUG = False
 GOLD_LABEL_PATH = "data/cntk_train_small.txt"
 PREDICTIONS_PATH = "data/predictions.txt"
 
-def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
+def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context=False, salt_swap=False):
     gold_data = CriteoDataset(GOLD_LABEL_PATH)
     predictions = CriteoPrediction(PREDICTIONS_PATH)
 
@@ -72,7 +72,11 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
 
         score_normalizer = np.sum(prob_scores)
 
-        score_logged_action = prob_scores[0]
+        logged_action_index = 0
+        if salt_swap:
+            logged_action_index = criteo_utils.compute_integral_hash(_impression['id'], salt_swap, len(_impression["candidates"]))
+
+        score_logged_action = prob_scores[logged_action_index]
 
         prediction_stochastic_weight = 1.0 * score_logged_action / (score_normalizer * propensity)
         prediction_stochastic_numerator[_idx] = rectified_label * prediction_stochastic_weight
@@ -80,7 +84,8 @@ def grade_predictions(PREDICTIONS_PATH, GOLD_LABEL_PATH, _context):
 
         impression_counter += 1 #Adding this as _idx is not available out of this scope
         if _idx % 100 == 0:
-            utils.update_progress(_context, _idx*100.0/max_instances)
+            if _context:
+                utils.update_progress(_context, _idx*100.0/max_instances)
             if DEBUG: print('.', end='')
 
     gold_data.close()
