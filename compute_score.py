@@ -7,9 +7,9 @@ from criteo_starter_kit.criteo_prediction import CriteoPrediction
 import numpy as np
 import utils
 
-def grade_predictions(predictions_path, gold_labels_path, expected_number_of_predictions=False, _context=False, salt_swap=False, _debug = False):
-    gold_data = CriteoDataset(gold_labels_path)
-    predictions = CriteoPrediction(predictions_path)
+def grade_predictions(predictions_path, gold_labels_path, expected_number_of_predictions=False, force_gzip=False, _context=False, salt_swap=False, _debug = False):
+    gold_data = CriteoDataset(gold_labels_path, gzip=force_gzip)
+    predictions = CriteoPrediction(predictions_path, gzip=force_gzip)
 
     # Instantiate variables
     pos_label = 0.001

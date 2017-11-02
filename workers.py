@@ -34,7 +34,7 @@ def grade_submission(data, _context):
     local_file_path = helpers.download_file_from_s3(file_key)
 
 
-    scores = grade_predictions(local_file_path, config.GOLD_LABEL_PATH, _context)
+    scores = grade_predictions(local_file_path, config.GOLD_LABEL_PATH, _context, force_gzip=True)
     for _key in scores.keys():
         # converting to simple `floats` (even if we loose a bit of precision)
         # as the default JSON serization did not work with numpy floats
