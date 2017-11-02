@@ -74,11 +74,11 @@ def grade_submission(data, _context):
         _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
     #Upload to CrowdAI Leaderboard
     headers = {'Authorization' : 'Token token='+config.CROWDAI_TOKEN, "Content-Type":"application/vnd.api+json"}
+    scores["file_key"] = file_key
     _payload = {}
     _payload["score"] = scores["ips"]
     _payload["score_secondary"] = scores["ips_std"]
-    _payload["meta"] = scores
-    _payload["meta"]["file_key"] = file_key
+    _payload["meta"] = json.dumps(scores)
     _payload['challenge_client_name'] = config.challenge_id
     _payload['api_key'] = _context['api_key']
     _payload['grading_status'] = 'graded'
