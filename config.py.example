@@ -6,9 +6,16 @@ class Config:
     redis_namespace = challenge_id
     CROWDAI_TOKEN= "YOUR-CROWDAI-TOKEN-GRADER-TOKEN-HERE"
     CROWDAI_GRADER_URL = "YOUR-CROWDAI-GRADER-URL"
-    
+
+    GOLD_LABEL_PATH = "data/cntk_train.txt"
+    NUM_TEST_IMPRESSIONS = <NUMBER OF TEST IMPRESSIONS>
+    GOLD_LABEL_PATH_SMALL = "data/cntk_train_small.txt"
+    NUM_SMALL_TEST_IMPRESSIONS = <NUMBER OF TEST IMPRESSIONS IN THE SMALL TEST SET>
+    SALT="SALT-USED-FOR-SALT-SWAP"
+
     AWS_S3_BUCKET = "s3-bucket-name"
     S3_UPLOAD_PATH = "S3 upload path"
     AWS_ACCESS_KEY_ID = "aws_access_key_id"
     AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
+
     TEMP_STORAGE_DIRECTORY_PATH = "temp/"
