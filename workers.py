@@ -33,8 +33,15 @@ def grade_submission(data, _context):
     _update_job_event(_context, job_info_template(_context,"Beginning grading of the submission"))
     local_file_path = helpers.download_file_from_s3(file_key)
 
+    if small_test:
+        gold_label_path = config.GOLD_LABEL_PATH_SMALL
+        expected_number_of_predictions = config.NUM_SMALL_TEST_IMPRESSIONS
+    else:
+        gold_label_path = config.GOLD_LABEL_PATH
+        expected_number_of_predictions = config.NUM_TEST_IMPRESSIONS
 
-    scores = grade_predictions(local_file_path, config.GOLD_LABEL_PATH, _context, force_gzip=True)
+    scores = grade_predictions(local_file_path, gold_label_path, _context, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions)
+
     for _key in scores.keys():
         # converting to simple `floats` (even if we loose a bit of precision)
         # as the default JSON serization did not work with numpy floats
