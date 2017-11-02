@@ -18,6 +18,8 @@ import helpers
 import uuid
 import os
 
+import utils
+
 from criteo_starter_kit import compute_score
 
 POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=config.redis_db)
