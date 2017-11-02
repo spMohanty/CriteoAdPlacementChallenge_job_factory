@@ -28,6 +28,7 @@ def _obtain_presigned_url(filename, context):
 
 def grade_submission(data, _context):
     file_key = data["file_key"]
+    small_test = data["small_test"]
     # Start the download of the file locally to the temp folder
     _update_job_event(_context, job_info_template(_context,"Beginning grading of the submission"))
     local_file_path = helpers.download_file_from_s3(file_key)

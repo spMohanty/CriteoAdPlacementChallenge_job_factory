@@ -7,7 +7,7 @@ from criteo_starter_kit.criteo_prediction import CriteoPrediction
 import numpy as np
 import utils
 
-def grade_predictions(predictions_path, gold_labels_path, _context=False, salt_swap=False, _debug = False):
+def grade_predictions(predictions_path, gold_labels_path, expected_number_of_predictions=False, _context=False, salt_swap=False, _debug = False):
     gold_data = CriteoDataset(gold_labels_path)
     predictions = CriteoPrediction(predictions_path)
 
@@ -16,7 +16,9 @@ def grade_predictions(predictions_path, gold_labels_path, _context=False, salt_s
     neg_label = 0.999
 
     max_instances = predictions.max_instances
-    # TODO: Validation: Add a forced assertion on the max_instances
+    if expected_number_of_predictions:
+        if max_instances != expected_number_of_predictions:
+            raise Exception("The prediction file is expected to contain predictions for {} impressions. But the submitted file contains predictins for {} impressions.".format(expected_number_of_predictions, max_instances))
 
     num_positive_instances = 0
     num_negative_instances = 0
