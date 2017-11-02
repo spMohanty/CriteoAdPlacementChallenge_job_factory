@@ -42,7 +42,7 @@ def grade_submission(data, _context):
         expected_number_of_predictions = config.NUM_TEST_IMPRESSIONS
         salt = config.SALT
 
-    scores = compute_score.grade_predictions(local_file_path, gold_label_path, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions, _context=_context, salt_swap=salt)
+    scores = compute_score.grade_predictions(local_file_path, gold_label_path, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions, _context=_context, salt_swap=salt, jobfactory_utils=utils)
     # Clean up
     import os
     os.remove(local_file_path)
