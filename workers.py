@@ -41,6 +41,10 @@ def grade_submission(data, _context):
         expected_number_of_predictions = config.NUM_TEST_IMPRESSIONS
 
     scores = grade_predictions(local_file_path, gold_label_path, _context, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions)
+    # Clean up
+    import os
+    os.remove(local_file_path)
+    # Clean up done
 
     for _key in scores.keys():
         # converting to simple `floats` (even if we loose a bit of precision)
