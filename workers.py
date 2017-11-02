@@ -18,7 +18,7 @@ import helpers
 import uuid
 import os
 
-from compute_score import grade_predictions
+from criteo_starter_kit import compute_score
 
 POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=config.redis_db)
 
@@ -40,7 +40,7 @@ def grade_submission(data, _context):
         gold_label_path = config.GOLD_LABEL_PATH
         expected_number_of_predictions = config.NUM_TEST_IMPRESSIONS
 
-    scores = grade_predictions(local_file_path, gold_label_path, _context, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions)
+    scores = compute_score.grade_predictions(local_file_path, gold_label_path, _context, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions)
     # Clean up
     import os
     os.remove(local_file_path)
