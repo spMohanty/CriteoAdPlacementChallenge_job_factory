@@ -77,8 +77,8 @@ def grade_submission(data, _context):
     _payload = {}
     _payload["score"] = scores["ips"]
     _payload["score_secondary"] = scores["ips_std"]
-    _payload["metadata"] = scores
-    _payload["metadata"]["file_key"] = file_key
+    _payload["meta"] = scores
+    _payload["meta"]["file_key"] = file_key
     _payload['challenge_client_name'] = config.challenge_id
     _payload['api_key'] = _context['api_key']
     _payload['grading_status'] = 'graded'
