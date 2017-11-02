@@ -36,11 +36,13 @@ def grade_submission(data, _context):
     if small_test:
         gold_label_path = config.GOLD_LABEL_PATH_SMALL
         expected_number_of_predictions = config.NUM_SMALL_TEST_IMPRESSIONS
+        salt = config.SALT
     else:
         gold_label_path = config.GOLD_LABEL_PATH
         expected_number_of_predictions = config.NUM_TEST_IMPRESSIONS
+        salt = config.SALT
 
-    scores = compute_score.grade_predictions(local_file_path, gold_label_path, _context, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions)
+    scores = compute_score.grade_predictions(local_file_path, gold_label_path, force_gzip=True, expected_number_of_predictions=expected_number_of_predictions, _context=_context, salt_swap=salt)
     # Clean up
     import os
     os.remove(local_file_path)
