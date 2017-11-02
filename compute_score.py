@@ -129,6 +129,6 @@ def grade_predictions(predictions_path, gold_labels_path, expected_number_of_pre
     return compute_result('NewPolicy-Stochastic', prediction_stochastic_numerator, prediction_stochastic_denominator)
 
 if __name__ == "__main__":
-    gold_labels_path = "data/cntk_train_small.txt"
-    predictions_path = "data/predictions.txt"
+    gold_labels_path = "data/cntk_train_small.txt.gz"
+    predictions_path = "data/predictions.txt.gz"
     print(grade_predictions(predictions_path, gold_labels_path, _debug=True))
