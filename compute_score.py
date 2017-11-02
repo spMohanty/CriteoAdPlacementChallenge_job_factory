@@ -32,7 +32,7 @@ def grade_predictions(predictions_path, gold_labels_path, expected_number_of_pre
         # TODO: Add Validation
         prediction = next(predictions)
         if _impression['id'] != prediction['id']:
-            raise Exception("`prediction_id` doesnot match the corresponding `impression_id`. Please ensure that the lines in the prediction file are in the same order as in the test set.")
+            raise Exception("`prediction_id` {} doesnot match the corresponding `impression_id`. Please ensure that the lines in the prediction file are in the same order as in the test set.".format(prediction['id']))
 
         scores = prediction["scores"]
 
