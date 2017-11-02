@@ -65,7 +65,7 @@ def grade_submission(data, _context):
 
 
     # Clean up
-    os.remove(local_file_path)
+    # os.remove(local_file_path)
 
     if small_test:
         _update_job_event(_context, job_info_template(_context, "Small Test Evaluated Successfully !!! "))
