@@ -58,11 +58,16 @@ def grade_submission(data, _context):
     _update_job_event(_context, job_info_template(_context, "ImpWt_std: {}".format(scores["impwt_std"])))
     _update_job_event(_context, job_info_template(_context, "SNIPS : {}".format(scores["snips"])))
     _update_job_event(_context, job_info_template(_context, "SNIPS_std: {}".format(scores["snips_std"])))
-    _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
+
 
     # Clean up
     os.remove(local_file_path)
 
+    if small_test:
+        _update_job_event(_context, job_info_template(_context, "Small Test Evaluated Successfully !!! "))
+        _update_job_event(_context, job_complete_template(_context, scores))
+    else:
+        _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
     #Upload to CrowdAI Leaderboard
     headers = {'Authorization' : 'Token token='+config.CROWDAI_TOKEN, "Content-Type":"application/vnd.api+json"}
     _payload = {}
