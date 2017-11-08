@@ -68,8 +68,9 @@ def grade_submission(data, _context):
     # os.remove(local_file_path)
 
     if small_test:
-        _update_job_event(_context, job_info_template(_context, "Small Test Evaluated Successfully !!! "))
+        _update_job_event(_context, job_info_template(_context, "Small Test Evaluated Successfully !!! Please make a submission for `criteo_test_release.txt.gz` with `small_test=False` for your scores to be reflected on the leaderboard. "))
         _update_job_event(_context, job_complete_template(_context, scores))
+	return
     else:
         _update_job_event(_context, job_info_template(_context, "Uploading scores to the leaderboard...."))
     #Upload to CrowdAI Leaderboard
