@@ -22,8 +22,7 @@ import utils
 
 from criteo_starter_kit import compute_score
 
-POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, db=config.redis_db)
-
+POOL = redis.ConnectionPool(host=config.redis_host, port=config.redis_port, password=config.redis_password, db=config.redis_db)
 
 def _obtain_presigned_url(filename, context):
     return helpers.obtain_presigned_url(filename)
